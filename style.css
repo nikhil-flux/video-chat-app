@@ -4,5 +4,5 @@ body { font-family: Arial; background: #1a1a1a; color: white; margin: 0; }
 button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; margin: 5px;}
 #end-call-btn { background: #dc3545; }
 #video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; padding: 10px; }
-video { width: 100%; background: #333; border-radius: 8px; }
+video { width: 100%; background: #333; border-radius: 8px; transform: scaleX(-1); }
 #controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 10px; border-radius: 20px; }

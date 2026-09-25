@@ -1,6 +1,6 @@
 // IMPORTANT: For testing on your own laptop, leave this as "http://localhost:3000"
 // When we put it on the internet later, we will change this line!
-const socket = io("https://walk-wheel-pledge-options.trycloudflare.com"); 
+const socket = io("https://administrator-poultry-sys-witness.trycloudflare.com"); 
 
 const joinScreen = document.getElementById('join-screen');
 const videoChat = document.getElementById('video-chat');
