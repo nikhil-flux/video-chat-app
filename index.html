@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Video Chat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="join-screen">
+        <h2>Join Video Chat</h2>
+        <input type="text" id="room-input" placeholder="Enter Room Code (e.g., party123)">
+        <button id="join-btn">Join Room</button>
+    </div>
+
+    <div id="video-chat" style="display: none;">
+        <div id="controls">
+            <button id="mute-btn">Mute Mic</button>
+            <button id="video-btn">Turn Off Camera</button>
+        </div>
+        <div id="video-grid">
+            <video id="local-video" autoplay muted playsinline></video>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
