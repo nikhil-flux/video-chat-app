@@ -1,6 +1,6 @@
 // IMPORTANT: For testing on your own laptop, leave this as "http://localhost:3000"
 // When we put it on the internet later, we will change this line!
-const socket = io("https://general-february-latest-cars.trycloudflare.com"); 
+const socket = io("https://walk-wheel-pledge-options.trycloudflare.com"); 
 
 const joinScreen = document.getElementById('join-screen');
 const videoChat = document.getElementById('video-chat');
@@ -70,6 +70,19 @@ socket.on('user-connected', async (userId) => {
     socket.emit('signal', { roomId: roomId, type: 'offer', target: userId, payload: offer });
 });
 
+socket.on('user-left', (userId) => {
+    // Close the peer connection
+    if (peers[userId]) {
+        peers[userId].close();
+        delete peers[userId];
+    }
+    // Remove the remote video element
+    const remoteVideo = document.getElementById(`video-${userId}`);
+    if (remoteVideo) {
+        remoteVideo.remove();
+    }
+});
+
 socket.on('signal', async (data) => {
     const { sender, type, payload } = data;
     if (data.target && data.target !== socket.id) return;
@@ -99,6 +112,32 @@ document.getElementById('video-btn').onclick = () => {
     const videoTrack = localStream.getVideoTracks()[0];
     videoTrack.enabled = !videoTrack.enabled;
     document.getElementById('video-btn').innerText = videoTrack.enabled ? 'Turn Off Camera' : 'Turn On Camera';
+};
+
+document.getElementById('end-call-btn').onclick = () => {
+    // Close all peer connections
+    Object.values(peers).forEach(peer => peer.close());
+    
+    // Stop all media tracks
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+    }
+    
+    // Remove all remote video elements
+    const videoGrid = document.getElementById('video-grid');
+    const remoteVideos = videoGrid.querySelectorAll('video:not(#local-video)');
+    remoteVideos.forEach(video => video.remove());
+    
+    // Notify others in the room that you're leaving
+    socket.emit('user-disconnected', roomId);
+    
+    // Leave the room
+    socket.off();
+    
+    // Reset and go back to join screen
+    joinScreen.style.display = 'flex';
+    videoChat.style.display = 'none';
+    roomId = null;
 };
 
 joinBtn.onclick = async () => {

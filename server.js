@@ -28,6 +28,11 @@ io.on('connection', (socket) => {
         });
     });
 
+    socket.on('user-disconnected', (roomId) => {
+        socket.to(roomId).emit('user-left', socket.id);
+        socket.leave(roomId);
+    });
+
     socket.on('disconnect', () => {
         console.log('User disconnected');
     });
