@@ -3,6 +3,23 @@ body { font-family: Arial; background: #1a1a1a; color: white; margin: 0; }
 #room-input { padding: 10px; font-size: 16px; margin-bottom: 10px; width: 250px; }
 button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; margin: 5px;}
 #end-call-btn { background: #dc3545; }
-#video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; padding: 10px; }
+#main-container { display: flex; height: 100vh; width: 100%; }
+#video-section { flex: 1; display: flex; flex-direction: column; }
+#video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; padding: 10px; flex: 1; overflow-y: auto; }
 video { width: 100%; background: #333; border-radius: 8px; transform: scaleX(-1); }
-#controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 10px; border-radius: 20px; }
+#controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 10px; border-radius: 20px; z-index: 100; }
+#chat-section { width: 300px; background: #2a2a2a; border-left: 1px solid #444; display: flex; flex-direction: column; }
+#chat-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #444; }
+#chat-header h3 { margin: 0; font-size: 18px; }
+#close-chat-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; margin: 0; width: 30px; height: 30px; }
+#close-chat-btn:hover { background: rgba(255,255,255,0.1); border-radius: 5px; }
+#messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+.message { padding: 8px 12px; border-radius: 8px; word-wrap: break-word; max-width: 100%; }
+.message.own { background: #007bff; margin-left: auto; max-width: 80%; }
+.message.other { background: #444; margin-right: auto; max-width: 80%; }
+.message-sender { font-size: 11px; opacity: 0.7; margin-bottom: 3px; }
+#chat-input-area { display: flex; gap: 5px; padding: 15px; border-top: 1px solid #444; }
+#message-input { flex: 1; padding: 10px; border: 1px solid #555; border-radius: 5px; background: #333; color: white; font-size: 14px; }
+#message-input::placeholder { color: #999; }
+#send-btn { padding: 10px 20px; background: #28a745; }
+#send-btn:hover { background: #218838; }

@@ -33,6 +33,13 @@ io.on('connection', (socket) => {
         socket.leave(roomId);
     });
 
+    socket.on('send-message', (data) => {
+        io.to(data.roomId).emit('receive-message', {
+            message: data.message,
+            sender: socket.id
+        });
+    });
+
     socket.on('disconnect', () => {
         console.log('User disconnected');
     });

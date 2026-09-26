@@ -1,6 +1,6 @@
 // IMPORTANT: For testing on your own laptop, leave this as "http://localhost:3000"
 // When we put it on the internet later, we will change this line!
-const socket = io("https://administrator-poultry-sys-witness.trycloudflare.com"); 
+const socket = io("https://glow-class-thomas-mother.trycloudflare.com"); 
 
 const joinScreen = document.getElementById('join-screen');
 const videoChat = document.getElementById('video-chat');
@@ -8,6 +8,12 @@ const joinBtn = document.getElementById('join-btn');
 const roomInput = document.getElementById('room-input');
 const videoGrid = document.getElementById('video-grid');
 const localVideo = document.getElementById('local-video');
+const chatSection = document.getElementById('chat-section');
+const messagesDiv = document.getElementById('messages');
+const messageInput = document.getElementById('message-input');
+const sendBtn = document.getElementById('send-btn');
+const chatToggleBtn = document.getElementById('chat-toggle-btn');
+const closeChatBtn = document.getElementById('close-chat-btn');
 
 let localStream;
 let roomId;
@@ -102,6 +108,62 @@ socket.on('signal', async (data) => {
     }
 });
 
+// Chat functionality
+socket.on('receive-message', (data) => {
+    displayMessage(data.message, data.sender, false);
+});
+
+function displayMessage(message, sender, isOwn) {
+    const messageEl = document.createElement('div');
+    messageEl.className = 'message ' + (isOwn ? 'own' : 'other');
+    
+    const senderEl = document.createElement('div');
+    senderEl.className = 'message-sender';
+    senderEl.textContent = isOwn ? 'You' : (sender || 'Anonymous');
+    
+    messageEl.appendChild(senderEl);
+    
+    const textEl = document.createElement('div');
+    textEl.textContent = message;
+    messageEl.appendChild(textEl);
+    
+    messagesDiv.appendChild(messageEl);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+sendBtn.onclick = () => {
+    const message = messageInput.value.trim();
+    if (message) {
+        socket.emit('send-message', { 
+            roomId: roomId, 
+            message: message 
+        });
+        displayMessage(message, 'You', true);
+        messageInput.value = '';
+    }
+};
+
+messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendBtn.click();
+    }
+});
+
+chatToggleBtn.onclick = () => {
+    if (chatSection.style.display === 'none') {
+        chatSection.style.display = 'flex';
+        chatToggleBtn.textContent = 'Close Chat';
+    } else {
+        chatSection.style.display = 'none';
+        chatToggleBtn.textContent = 'Open Chat';
+    }
+};
+
+closeChatBtn.onclick = () => {
+    chatSection.style.display = 'none';
+    chatToggleBtn.textContent = 'Open Chat';
+};
+
 document.getElementById('mute-btn').onclick = () => {
     const audioTrack = localStream.getAudioTracks()[0];
     audioTrack.enabled = !audioTrack.enabled;
@@ -137,6 +199,7 @@ document.getElementById('end-call-btn').onclick = () => {
     // Reset and go back to join screen
     joinScreen.style.display = 'flex';
     videoChat.style.display = 'none';
+    chatSection.style.display = 'none';
     roomId = null;
 };
 
@@ -146,5 +209,6 @@ joinBtn.onclick = async () => {
     await initLocalMedia();
     joinScreen.style.display = 'none';
     videoChat.style.display = 'block';
+    messagesDiv.innerHTML = '';
     socket.emit('join-room', roomId);
 };
