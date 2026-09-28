@@ -9,6 +9,7 @@
     <div id="join-screen">
         <h2>Join Video Chat</h2>
         <input type="text" id="room-input" placeholder="Enter Room Code (e.g., party123)">
+        <input type="text" id="name-input" placeholder="Enter Your Name">
         <button id="join-btn">Join Room</button>
     </div>
 
@@ -22,7 +23,10 @@
                     <button id="end-call-btn">End Call</button>
                 </div>
                 <div id="video-grid">
-                    <video id="local-video" autoplay muted playsinline></video>
+                    <div class="video-container">
+                        <video id="local-video" autoplay muted playsinline></video>
+                        <div id="local-name" class="video-name"></div>
+                    </div>
                 </div>
             </div>
 

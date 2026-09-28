@@ -1,13 +1,15 @@
 // IMPORTANT: For testing on your own laptop, leave this as "http://localhost:3000"
 // When we put it on the internet later, we will change this line!
-const socket = io("https://glow-class-thomas-mother.trycloudflare.com"); 
+const socket = io("https://speaker-pipeline-defend-fraser.trycloudflare.com"); 
 
 const joinScreen = document.getElementById('join-screen');
 const videoChat = document.getElementById('video-chat');
 const joinBtn = document.getElementById('join-btn');
 const roomInput = document.getElementById('room-input');
+const nameInput = document.getElementById('name-input');
 const videoGrid = document.getElementById('video-grid');
 const localVideo = document.getElementById('local-video');
+const localNameDisplay = document.getElementById('local-name');
 const chatSection = document.getElementById('chat-section');
 const messagesDiv = document.getElementById('messages');
 const messageInput = document.getElementById('message-input');
@@ -17,7 +19,9 @@ const closeChatBtn = document.getElementById('close-chat-btn');
 
 let localStream;
 let roomId;
+let userName;
 const peers = {};
+const userNames = {};
 
 const configuration = {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
@@ -44,14 +48,27 @@ function createPeerConnection(targetUserId) {
     });
 
     peer.ontrack = (event) => {
-        let remoteVideo = document.getElementById(`video-${targetUserId}`);
-        if (!remoteVideo) {
-            remoteVideo = document.createElement('video');
+        let videoContainer = document.getElementById(`container-${targetUserId}`);
+        if (!videoContainer) {
+            videoContainer = document.createElement('div');
+            videoContainer.className = 'video-container';
+            videoContainer.id = `container-${targetUserId}`;
+            
+            const remoteVideo = document.createElement('video');
             remoteVideo.id = `video-${targetUserId}`;
             remoteVideo.autoplay = true;
             remoteVideo.playsinline = true;
-            videoGrid.appendChild(remoteVideo);
+            
+            const nameDisplay = document.createElement('div');
+            nameDisplay.id = `name-${targetUserId}`;
+            nameDisplay.className = 'video-name';
+            nameDisplay.textContent = userNames[targetUserId] || 'User';
+            
+            videoContainer.appendChild(remoteVideo);
+            videoContainer.appendChild(nameDisplay);
+            videoGrid.appendChild(videoContainer);
         }
+        const remoteVideo = document.getElementById(`video-${targetUserId}`);
         remoteVideo.srcObject = event.streams[0];
     };
 
@@ -69,7 +86,12 @@ function createPeerConnection(targetUserId) {
     return peer;
 }
 
-socket.on('user-connected', async (userId) => {
+socket.on('user-connected', async (data) => {
+    const userId = data.userId;
+    const name = data.userName;
+    
+    userNames[userId] = name;
+    
     const peer = createPeerConnection(userId);
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
@@ -82,11 +104,12 @@ socket.on('user-left', (userId) => {
         peers[userId].close();
         delete peers[userId];
     }
-    // Remove the remote video element
-    const remoteVideo = document.getElementById(`video-${userId}`);
-    if (remoteVideo) {
-        remoteVideo.remove();
+    // Remove the remote video container
+    const videoContainer = document.getElementById(`container-${userId}`);
+    if (videoContainer) {
+        videoContainer.remove();
     }
+    delete userNames[userId];
 });
 
 socket.on('signal', async (data) => {
@@ -110,7 +133,7 @@ socket.on('signal', async (data) => {
 
 // Chat functionality
 socket.on('receive-message', (data) => {
-    displayMessage(data.message, data.sender, false);
+    displayMessage(data.message, data.senderName, false);
 });
 
 function displayMessage(message, sender, isOwn) {
@@ -119,7 +142,7 @@ function displayMessage(message, sender, isOwn) {
     
     const senderEl = document.createElement('div');
     senderEl.className = 'message-sender';
-    senderEl.textContent = isOwn ? 'You' : (sender || 'Anonymous');
+    senderEl.textContent = sender;
     
     messageEl.appendChild(senderEl);
     
@@ -136,9 +159,10 @@ sendBtn.onclick = () => {
     if (message) {
         socket.emit('send-message', { 
             roomId: roomId, 
-            message: message 
+            message: message,
+            senderName: userName
         });
-        displayMessage(message, 'You', true);
+        displayMessage(message, userName, true);
         messageInput.value = '';
     }
 };
@@ -186,9 +210,8 @@ document.getElementById('end-call-btn').onclick = () => {
     }
     
     // Remove all remote video elements
-    const videoGrid = document.getElementById('video-grid');
-    const remoteVideos = videoGrid.querySelectorAll('video:not(#local-video)');
-    remoteVideos.forEach(video => video.remove());
+    const videoContainers = videoGrid.querySelectorAll('.video-container:not(#local-container)');
+    videoContainers.forEach(container => container.remove());
     
     // Notify others in the room that you're leaving
     socket.emit('user-disconnected', roomId);
@@ -201,14 +224,28 @@ document.getElementById('end-call-btn').onclick = () => {
     videoChat.style.display = 'none';
     chatSection.style.display = 'none';
     roomId = null;
+    userName = null;
 };
 
 joinBtn.onclick = async () => {
     roomId = roomInput.value.trim();
+    userName = nameInput.value.trim();
+    
     if (!roomId) return alert("Enter a room code!");
+    if (!userName) return alert("Enter your name!");
+    
     await initLocalMedia();
+    
+    // Wrap local video in container
+    const localContainer = document.createElement('div');
+    localContainer.className = 'video-container';
+    localContainer.id = 'local-container';
+    localVideo.parentNode.insertBefore(localContainer, localVideo);
+    localContainer.appendChild(localVideo);
+    localNameDisplay.textContent = userName;
+    
     joinScreen.style.display = 'none';
     videoChat.style.display = 'block';
     messagesDiv.innerHTML = '';
-    socket.emit('join-room', roomId);
+    socket.emit('join-room', { roomId: roomId, userName: userName });
 };

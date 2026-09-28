@@ -14,9 +14,15 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
-    socket.on('join-room', (roomId) => {
+    socket.on('join-room', (data) => {
+        const roomId = data.roomId;
+        const userName = data.userName;
+        
         socket.join(roomId);
-        socket.to(roomId).emit('user-connected', socket.id);
+        socket.to(roomId).emit('user-connected', { 
+            userId: socket.id,
+            userName: userName
+        });
     });
 
     socket.on('signal', (data) => {
@@ -36,7 +42,7 @@ io.on('connection', (socket) => {
     socket.on('send-message', (data) => {
         io.to(data.roomId).emit('receive-message', {
             message: data.message,
-            sender: socket.id
+            senderName: data.senderName
         });
     });
 
