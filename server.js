@@ -11,12 +11,18 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
+// Track which room each socket is in
+const userRooms = {};
+
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
     socket.on('join-room', (data) => {
         const roomId = data.roomId;
         const userName = data.userName;
+        
+        // Store which room this user is in
+        userRooms[socket.id] = roomId;
         
         socket.join(roomId);
         socket.to(roomId).emit('user-connected', { 
@@ -37,6 +43,7 @@ io.on('connection', (socket) => {
     socket.on('user-disconnected', (roomId) => {
         socket.to(roomId).emit('user-left', socket.id);
         socket.leave(roomId);
+        delete userRooms[socket.id];
     });
 
     socket.on('send-message', (data) => {
@@ -48,7 +55,18 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('User disconnected');
+        console.log('User disconnected:', socket.id);
+        
+        // Get the room this user was in
+        const roomId = userRooms[socket.id];
+        
+        // If they were in a room, notify others
+        if (roomId) {
+            socket.to(roomId).emit('user-left', socket.id);
+        }
+        
+        // Clean up
+        delete userRooms[socket.id];
     });
 });
 
