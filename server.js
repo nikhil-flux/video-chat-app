@@ -40,7 +40,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('send-message', (data) => {
-        io.to(data.roomId).emit('receive-message', {
+        // Use socket.broadcast.to() so message only goes to OTHERS, not back to sender
+        socket.broadcast.to(data.roomId).emit('receive-message', {
             message: data.message,
             senderName: data.senderName
         });
