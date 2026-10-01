@@ -1,6 +1,6 @@
 // IMPORTANT: For testing on your own laptop, leave this as "http://localhost:3000"
 // When we put it on the internet later, we will change this line!
-const socket = io("https://sci-twenty-coverage-eric.trycloudflare.com"); 
+const socket = io("https://low-yeah-acquire-telecharger.trycloudflare.com"); 
 
 const joinScreen = document.getElementById('join-screen');
 const videoChat = document.getElementById('video-chat');
