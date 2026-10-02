@@ -1,138 +1,135 @@
 # 🎥 Video Chat App
 
-A free, real-time video chat application built with WebRTC and Socket.IO. Connect with up to 10+ people simultaneously without any backend costs!
+A real-time, peer-to-peer video chat application built with WebRTC and Socket.IO. Connect with multiple users simultaneously in private rooms with zero backend media costs. Fully containerized with Docker for instant deployment — no local dependencies required.
 
 ---
 
 ## ✨ Features
 
-- ✅ **Peer-to-Peer Video Streaming** - Direct connection between users (no server overhead)
-- ✅ **Real-Time Signaling** - Instant connection setup via Socket.IO
-- ✅ **Room-Based Calling** - Join the same room to video chat
-- ✅ **Mute/Unmute Audio** - Control your microphone
-- ✅ **Camera On/Off** - Toggle your video feed
-- ✅ **Low Bandwidth** - Optimized for 10+ simultaneous users
-- ✅ **Mobile Friendly** - Works on phones, tablets, and desktops
-- ✅ **Free Deployment** - Use Cloudflare Tunnel for free remote access
+-   **Peer-to-Peer Video:** Direct WebRTC connections between users (no server-side media relay)
+-   **Room-Based Calling:** Join any room by code; all users in the same room connect automatically
+-   **Real-Time Signaling:** Instant connection setup via Socket.IO over WebSocket
+-   **In-Room Text Chat:** Send and receive messages alongside video calls
+-   **Media Controls:** Mute/unmute microphone, toggle camera on/off, end call
+-   **User Identity:** Display names on video tiles for easy identification
+-   **Responsive Grid Layout:** Auto-adjusting video grid for 2–10+ participants
+-   **Zero Local Dependencies:** Docker handles all runtime requirements
+-   **Free Global Access:** Deploy anywhere using Cloudflare Tunnels (no port forwarding)
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** HTML, CSS, JavaScript
-- **Backend:** Node.js, Express
-- **Real-Time Communication:** Socket.IO
-- **Video Streaming:** WebRTC
-- **Signaling Server:** Express + Socket.IO
-- **Remote Access:** Cloudflare Tunnel (Free)
+| Layer | Technology |
+| :--- | :--- |
+| Frontend | HTML5, CSS3, Vanilla JavaScript |
+| Backend | Node.js 18, Express |
+| Real-Time | Socket.IO (WebSocket signaling) |
+| Media | WebRTC (P2P video/audio) |
+| Containerization | Docker + Docker Compose |
+| Remote Access | Cloudflare Tunnel (`cloudflared`) |
+| Base Image | `node:18-alpine` (minimal footprint) |
 
 ---
 
-## 📋 Requirements
+## 🚀 Getting Started
 
-- **Node.js** (v14 or higher) - [Download](https://nodejs.org/)
-- **Git** (for cloning) - [Download](https://git-scm.com/)
-- **Cloudflared** (for remote access) - [Download](https://github.com/cloudflare/cloudflared/releases)
-- **Modern Web Browser** (Chrome, Firefox, Edge, Safari)
+### Prerequisites
 
----
+-   [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+-   [Cloudflared](https://github.com/cloudflare/cloudflared/releases) binary (for remote access only)
+-   Modern browser with camera/microphone permissions (Chrome, Firefox, Edge, Safari)
 
-## 🚀 Quick Start
+> ⚠️ **No Node.js, npm, or Git installation needed locally.** Docker pulls the base image and installs all dependencies inside the container automatically.
 
-### **1. Clone the Repository**
+### Step 1: Clone & Start with Docker Compose
 
-    git clone https://github.com/nikhil-flux/video-chat-app.git
-    cd video-chat-app
+```bash
+git clone https://github.com/nikhil-flux/video-chat-app.git
+cd video-chat-app
+docker compose up --build -d
+```
 
-### **2. Install Dependencies**
-      
-    npm install
+The container will:
+	•	Build from  node:18-alpine 
+	•	Install production dependencies via  npm ci 
+	•	Bind to  0.0.0.0:3000  inside the container
+	•	Map host port  3000  → container port  3000 
+	•	Run a health check every 30s to verify responsiveness
+Verify it’s healthy:
+```bash
+docker compose ps
+# STATUS should show "(healthy)" after ~40s
+```
+Open http://localhost:3000 in your browser.
 
-## 🌍 Remote Access (Share Worldwide)
+## 🌍 Remote Access via Cloudflare Tunnel
 
-Install Cloudflared
+Share your app globally without opening firewall ports or configuring NAT.
 
-    Download from: https://github.com/cloudflare/cloudflared/releases
+### Step 1: Create an Tunnel
+With the Docker container running, open a separate terminal and run:
+```bash
+cloudflared-windows-amd64.exe tunnel --url http://localhost:3000
+```
+you'll see output like:
+```bash
+Your quick tunnel has been created! Visit it at:
+https://brave-panda-123.trycloudflare.com
+```
 
-Run Both in Separate Windows
+### Step 2: Update the Socket Endpoint
+Edit  app.js  line 2 and replace the localhost URL with your tunnel URL:
+```javascript
+// Before
+const socket = io("http://localhost:3000");
 
-  Window 1: Start Node Server
+// After
+const socket = io("https://brave-panda-123.trycloudflare.com");
+```
+### Step 3: Rebuild & Share
+```bash
+docker compose up --build -d
+```
+Send the  trycloudflare.com  link to anyone. They can join from anywhere — no installation required on their end.
 
-    node server.js
+## How to Use
+1.	Enter Room Code: Type any identifier (e.g.,  team-meeting ,  family-call ). All participants must use the exact same code.
+2.	Enter Your Name: This appears on your video tile for others to identify you.
+3.	Click “Join Room”: Grant camera and microphone permissions when prompted.
+4.	Video Grid: Remote participants appear automatically in a responsive grid layout.
+5.	Controls:
+	•	Mute Mic / Unmute Mic – Toggle audio input
+	•	Turn Off Camera / Turn On Camera – Toggle video input
+	•	Open Chat / Close Chat – Show/hide the text chat panel
+	•	End Call – Disconnect, stop media tracks, and return to join screen
 
-  you'll see "Server is running"
+## ⚡ Performance Tips
 
-  Window 2: Create Tunnel
+  Scenario	                   Recommendation
+| Lag with 5+ users		     | Reduce resolution in app.js: video: { width: 240, height: 180 }
+| High bandwidth usage	     | Current default is 320×240 (~500–800 kbps/user); lower further if needed
+| Latency > 500ms		     | Ensure all users are on stable connections; P2P latency scales with network hops
+| Container slow startup	 | Health check start_period is set to 40s; increase if building on slow hardware
+| Memory pressure		     | Alpine base image uses ~85MB idle; monitor with docker stats video-chat-app
+| Tunnel disconnects		 | Ephemeral tunnels expire after inactivity; restart cloudflared or use a named tunnel
 
-    cloudflared-windows-amd64.exe tunnel --url http://localhost:3000
+## 📁 Project Structure
 
-  you'll see "Your quick tunnel has been created! Visit it at: 
-  https://brave-panda-123.trycloudflare.com"
-
-**Update app.js**
-Replace this line:
-                    
-    const socket = io("http://10.138.136.180:3000");
-    
-With your tunnel URL:
-
-    const socket = io("https://brave-panda-123.trycloudflare.com");
-
-**Share the URL**
-
-  Send friends this link 
-
-      https://brave-panda-123.trycloudflare.com
-
-  They can join from anywhere! 🌍
-
-
-  ## 📁 Project Structure
-
-    video-chat-app/
-          ├── index.html          # Frontend HTML
-          ├── app.js              # Frontend JavaScript (WebRTC & Socket.IO)
-          ├── style.css           # Styling
-          ├── server.js           # Backend Node.js server
-          ├── package.json        # Dependencies
-          ├── package-lock.json   # Lock file
-          └── README.md           # This file
-
-  ## 🎮 How to Use
-
-	1.	Enter Room Code: Pick any room name (e.g., "party123")
-	2.	Click Join: Both users must use the same room code
-	3.	Allow Permissions: Browser asks for camera/microphone access
-	4.	See Video: All connected users appear in a grid
-	5.	Mute/Camera: Use buttons to control your audio/video
-
-## 📊 Performance Tips
-
-	•	Max Users: Tested with 10+ simultaneous users
-	•	Video Quality: Low resolution (320x240) optimized for bandwidth
-	•	Latency: < 100ms for same WiFi, < 500ms for internet
-	•	Bandwidth: ~500-800 kbps per user
-
-If It Lags
-
-Reduce video resolution in app.js:
-
-      video: { width: 240, height: 180 }  // Lower resolution
+video-chat-app/
+├── docker-compose.yml      # Container orchestration, networking, healthcheck
+├── Dockerfile              # node:18-alpine build with production deps
+── .dockerignore            # Excludes node_modules, .git from build context
+├── server.js               # Express + Socket.IO signaling server
+├── app.js                  # WebRTC client logic + Socket.IO client
+├── index.html              # Main UI (join screen, video grid, chat)
+└── style.css               # Responsive grid layout & controls styling
 
 
-## 🚀 Future Features
 
-	☐︎	Screen sharing
-	☐︎	Chat messages
-	☐︎	Recording video calls
-	☐︎	User profiles
-	☐︎	Better UI/UX
-	☐︎	Mobile app (React Native)
-	☐︎	Persistent rooms (database)
-	☐︎	User authentication
-    
 
-  
+
+
 
 
 
