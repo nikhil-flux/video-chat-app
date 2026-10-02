@@ -106,24 +106,24 @@ Send the  trycloudflare.com  link to anyone. They can join from anywhere — no 
 
 ## ⚡ Performance Tips
 
-  Scenario	                   Recommendation
-| Lag with 5+ users		     | Reduce resolution in app.js: video: { width: 240, height: 180 }
-| High bandwidth usage	     | Current default is 320×240 (~500–800 kbps/user); lower further if needed
-| Latency > 500ms		     | Ensure all users are on stable connections; P2P latency scales with network hops
-| Container slow startup	 | Health check start_period is set to 40s; increase if building on slow hardware
-| Memory pressure		     | Alpine base image uses ~85MB idle; monitor with docker stats video-chat-app
-| Tunnel disconnects		 | Ephemeral tunnels expire after inactivity; restart cloudflared or use a named tunnel
+	  Scenario	                   Recommendation
+	| Lag with 5+ users		     | Reduce resolution in app.js: video: { width: 240, height: 180 }
+	| High bandwidth usage	     | Current default is 320×240 (~500–800 kbps/user); lower further if needed
+	| Latency > 500ms		     | Ensure all users are on stable connections; P2P latency scales with network hops
+	| Container slow startup	 | Health check start_period is set to 40s; increase if building on slow hardware
+	| Memory pressure		     | Alpine base image uses ~85MB idle; monitor with docker stats video-chat-app
+	| Tunnel disconnects		 | Ephemeral tunnels expire after inactivity; restart cloudflared or use a named tunnel
 
 ## 📁 Project Structure
 
-video-chat-app/
-├── docker-compose.yml      # Container orchestration, networking, healthcheck
-├── Dockerfile              # node:18-alpine build with production deps
-── .dockerignore            # Excludes node_modules, .git from build context
-├── server.js               # Express + Socket.IO signaling server
-├── app.js                  # WebRTC client logic + Socket.IO client
-├── index.html              # Main UI (join screen, video grid, chat)
-└── style.css               # Responsive grid layout & controls styling
+	video-chat-app/
+	├── docker-compose.yml      # Container orchestration, networking, healthcheck
+	├── Dockerfile              # node:18-alpine build with production deps
+	── .dockerignore            # Excludes node_modules, .git from build context
+	├── server.js               # Express + Socket.IO signaling server
+	├── app.js                  # WebRTC client logic + Socket.IO client
+	├── index.html              # Main UI (join screen, video grid, chat)
+	└── style.css               # Responsive grid layout & controls styling
 
 
 
