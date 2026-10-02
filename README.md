@@ -51,11 +51,13 @@ docker compose up --build -d
 ```
 
 The container will:
+
 	•	Build from  node:18-alpine 
 	•	Install production dependencies via  npm ci 
 	•	Bind to  0.0.0.0:3000  inside the container
 	•	Map host port  3000  → container port  3000 
 	•	Run a health check every 30s to verify responsiveness
+	
 Verify it’s healthy:
 ```bash
 docker compose ps
@@ -99,10 +101,11 @@ Send the  trycloudflare.com  link to anyone. They can join from anywhere — no 
 3.	Click “Join Room”: Grant camera and microphone permissions when prompted.
 4.	Video Grid: Remote participants appear automatically in a responsive grid layout.
 5.	Controls:
-	•	Mute Mic / Unmute Mic – Toggle audio input
-	•	Turn Off Camera / Turn On Camera – Toggle video input
-	•	Open Chat / Close Chat – Show/hide the text chat panel
-	•	End Call – Disconnect, stop media tracks, and return to join screen
+   
+		•	Mute Mic / Unmute Mic – Toggle audio input
+		•	Turn Off Camera / Turn On Camera – Toggle video input
+		•	Open Chat / Close Chat – Show/hide the text chat panel
+		•	End Call – Disconnect, stop media tracks, and return to join screen
 
 ## ⚡ Performance Tips
 
