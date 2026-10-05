@@ -12,9 +12,6 @@ services:
     restart: unless-stopped
     networks:
       - video-chat-network
-    volumes:
-      - ./:/app
-      - /app/node_modules
     healthcheck:
       test: ["CMD", "node", "-e", "const http=require('http');const r=http.get('http://localhost:3000',(res)=>{process.exit(res.statusCode===200?0:1)});r.on('error',()=>process.exit(1))"]
       interval: 30s
