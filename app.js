@@ -1,6 +1,6 @@
 // IMPORTANT: For testing on your own laptop, leave this as "http://localhost:3000"
 // When we put it on the internet later, we will change this line!
-const socket = io(""); 
+const socket = io(); 
 
 const joinScreen = document.getElementById('join-screen');
 const videoChat = document.getElementById('video-chat');
