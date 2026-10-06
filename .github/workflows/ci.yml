@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,7 +27,7 @@ jobs:
   publish:
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -41,3 +41,42 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/video-chat-app:latest
             ${{ secrets.DOCKER_USERNAME }}/video-chat-app:${{ github.sha }}
+
+  deploy:
+    needs: publish
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: [self-hosted, linux, aws]
+    steps:
+      - name: Pull latest image
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/video-chat-app:latest
+
+      - name: Restart app container
+        run: |
+          docker network create vc-net 2>/dev/null || true
+          docker rm -f video-chat 2>/dev/null || true
+          docker run -d --name video-chat --network vc-net --restart unless-stopped \
+            ${{ secrets.DOCKER_USERNAME }}/video-chat-app:latest
+
+      - name: Start Cloudflare tunnel (only if not already running)
+        run: |
+          if [ -z "$(docker ps -q -f name=^tunnel$)" ]; then
+            docker rm -f tunnel 2>/dev/null || true
+            docker run -d --name tunnel --network vc-net --restart unless-stopped \
+              cloudflare/cloudflared:latest tunnel --no-autoupdate --url http://video-chat:3000
+          fi
+
+      - name: Wait for healthy container
+        run: |
+          for i in $(seq 1 20); do
+            status=$(docker inspect --format '{{.State.Health.Status}}' video-chat)
+            echo "health: $status"
+            if [ "$status" = "healthy" ]; then exit 0; fi
+            sleep 3
+          done
+          docker logs video-chat
+          exit 1
+
+      - name: Find public URL
+        run: |
+          sleep 5
+          docker logs tunnel 2>&1 | grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' | tail -1
